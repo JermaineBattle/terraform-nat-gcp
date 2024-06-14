@@ -5,7 +5,7 @@ terraform {
       }
     }
   }
-  
+
 # PROVIDER
 provider "google" {
     project = "asg-workshop"
@@ -14,16 +14,14 @@ provider "google" {
     credentials = "${var.GOOGLE_CREDENTIALS}"
 }
 
-
 # NETWORK
 resource "google_compute_network" "net" {
     name = "net"
     auto_create_subnetworks = false
 }
 
-
 # SUBNETS
-  resource "google_compute_subnetwork" "public1" {
+resource "google_compute_subnetwork" "public1" {
     name = "public1"
     network = google_compute_network.net.self_link
     region = "${var.region}"
@@ -38,16 +36,16 @@ resource "google_compute_subnetwork" "private1" {
 }
 
 # ROUTER
- resource "google_compute_router" "router"{
+resource "google_compute_router" "router"{
     name = "router"
     region = "${var.region}"
     network = google_compute_network.net.self_link
 
     depends_on = [ google_compute_network.net ]
- }
+}
 
  # ROUTER NAT
- resource "google_compute_router_nat" "nat" {
+resource "google_compute_router_nat" "nat" {
     name = "nat"
     source_subnetwork_ip_ranges_to_nat = "LIST_OF_SUBNETWORKS"
     router = google_compute_router.router.name
@@ -59,7 +57,7 @@ resource "google_compute_subnetwork" "private1" {
     }
     
     depends_on = [google_compute_router.router]
- }
+}
 
 #FIREWALL
 resource "google_compute_firewall" "allow-ingress" {
@@ -112,14 +110,13 @@ resource "google_compute_firewall" "allow-ssh-iap-tunnel" {
   direction = "INGRESS"
 
   allow {
-    protocol = "ssh"
+    protocol = "tcp"
     ports = ["22"]
   }
 
   source_ranges = ["35.235.240.0/20"]
   target_tags = ["iap-tunnel"]
 }
-
 
 # PUBLIC INSTANCE
 resource "google_compute_instance" "public-vm" {
